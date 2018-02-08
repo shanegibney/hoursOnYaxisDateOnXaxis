@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  /* set the CSS */
+
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+  }
+</style>
+
+<body>
+
+  <!-- load the d3.js library -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script>
+    var data = [{
+      "start": "1 May 2017 10:30",
+      "end": "1 May 2017 08:30"
+    }, {
+      "start": "2 May 2017 10:30",
+      "end": "2 May 2017 15:30"
+    }, {
+      "start": "4 May 2017 10:30",
+      "end": "4 May 2017 18:30"
+    }];
+
+    // set the dimensions and margins of the graph
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 50
+      },
+      width = 960 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+    // parse the date / time
+    var parseTime = d3.timeParse("%d %B %Y %H:%M");
+    //how to isolate hours and minutes from a datetime
+    var parseHours = d3.parseTime("%H:%M");
+
+    // set the ranges
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+    // format the data
+    data.forEach(function(d) {
+      d.start = parseTime(d.start);
+      d.end = parseTime(d.end);
+    });
+
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) {
+      return d.start;
+    }));
+    y.domain([0, d3.max(data, function(d) {
+      return d.end;
+    })]);
+
+    // Add the rect
+    svg.append("rect")
+      .data([data])
+      .enter()
+      // .attr("class", "line")
+      .attr("x", function(d, i) {
+        return x(d.start);
+      })
+      .attr("y", 10)
+      .attr("width", 20)
+      .attr("height", function(d, i) {
+        //bar should be difference between start and end
+        return x(d.start - d.end);
+      })
+    // Add the X Axis
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Add the Y Axis
+    svg.append("g")
+      .call(d3.axisLeft(y));
+  </script>
+</body>
